@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghibli Magic Studio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f0e6;
+            text-align: center;
+        }
+
+        header {
+            background-color: #2c6e49;
+            padding: 20px;
+            color: white;
+            font-size: 24px;
+        }
+
+        nav a {
+            margin: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .upload-container, .slider-container {
+            margin: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label {
+            background-color: #4c956c;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        .preview-container div {
+            margin: 10px;
+        }
+
+        img {
+            max-width: 300px;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            color: white;
+            background-color: #2c6e49;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        footer {
+            margin-top: 20px;
+            background-color: #2c6e49;
+            color: white;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>GhibliMagic Studio</h1>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">Gallery</a>
+            <a href="#">Tutorials</a>
+            <a href="#">About</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="upload-container">
+            <input type="file" id="imageUpload" accept="image/*">
+            <label for="imageUpload">Upload Image</label>
+        </div>
+
+        <div class="slider-container">
+            <label for="creativitySlider">Ghibli Magic Intensity:</label>
+            <input type="range" id="creativitySlider" min="1" max="100" value="50">
+        </div>
+
+        <div class="preview-container">
+            <div>
+                <h3>Original</h3>
+                <img id="originalImage" src="" alt="Original Preview">
+            </div>
+            <div>
+                <h3>Ghibli Style</h3>
+                <img id="styledImage" src="" alt="Styled Preview">
+            </div>
+        </div>
+
+        <button id="transformButton">Transform Image</button>
+        <button id="downloadButton">Download</button>
+    </main>
+
+    <footer>
+        <p>Not affiliated with Studio Ghibli. © 2025 GhibliMagic Studio</p>
+    </footer>
+
+    <script>
+        document.getElementById("imageUpload").addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById("originalImage").src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById("transformButton").addEventListener("click", function() {
+            const imageElement = document.getElementById("originalImage");
+            if (!imageElement.src) {
+                alert("Please upload an image first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("image", imageElement.src);
+
+            fetch("https://api.deepai.org/api/fast-style-transfer", {
+                method: "POST",
+                headers: {
+                    "api-key": "8e798d53-e463-4fef-8b82-d5f6d15d7bc0"
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.output_url) {
+                    document.getElementById("styledImage").src = data.output_url;
+                } else {
+                    alert("Error processing image. Try again!");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+
+        document.getElementById("downloadButton").addEventListener("click", function() {
+            const styledImage = document.getElementById("styledImage");
+            if (styledImage.src) {
+                const link = document.createElement("a");
+                link.href = styledImage.src;
+                link.download = "ghibli-style.png";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert("No processed image to download.");
+            }
+        });
+    </script>
+</body>
+</html>
